@@ -1,0 +1,45 @@
+#ifndef BGPSYNCHRONOUS_H
+#define BGPSYNCHRONOUS_H
+
+#include <vector>
+
+#include "enums.h"
+#include "protocol.h"
+#include "nodeOneDest.h"
+#include "algebra.h"
+#include "event.h"
+
+
+template<class A> class BGPSync : public Protocol<A> {
+public:
+    BGPSync();
+    ~BGPSync();
+
+    std::vector<Event<A>> SynchronousIteration(RoutingAlgebra<A> &, std::vector<NodeOneDest<A>> &, int, int, bool=false);
+    std::vector<Event<A>> processEvent(RoutingAlgebra<A> &, Event<A> &, std::vector<NodeOneDest<A>> &, int=-1, bool=false);
+    bool assertCorrectness(std::vector<NodeOneDest<A>> &, RoutingAlgebra<A> &, EventType, int, bool=true);
+    int getPathLength(std::vector<NodeOneDest<A>> &, int, RoutingAlgebra<A> &, int);
+    std::vector<int>& getCycleBlackHoleTimes(std::vector<NodeOneDest<A>> &, RoutingAlgebra<A> &);
+    std::vector<int> &getCycleBlackHoleChanges(std::vector<NodeOneDest<A>> &, RoutingAlgebra<A> &);
+
+
+private:
+    bool* hasEvent;
+    std::vector<int> nCycles;
+    std::vector<bool> inCycle;
+    std::vector<int> cycleFormed;
+    std::vector<int> timeInCycle;
+    
+    void processUpdateMessage(NodeOneDest<A> &, int, const A &, RoutingAlgebra<A> &);
+    void processAdvertise(NodeOneDest<A> &, int, A, bool=false);
+    void processWithdrawal(NodeOneDest<A> &, int, RoutingAlgebra<A> &, bool=false);
+    void processLinkCostChange(int, NodeOneDest<A> &, bool=false);
+    void processLinkAddition(int, NodeOneDest<A> &, bool=false);
+    void processLinkFailure(NodeOneDest<A> &, int, RoutingAlgebra<A> &, bool=false);
+    
+    bool auxCheckCycle(int, RoutingAlgebra<A> &, std::vector<NodeOneDest<A>> &);
+    bool checkCycle(int, std::vector<NodeOneDest<A>> &, int, bool=false);
+
+};
+
+#endif
